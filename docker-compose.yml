@@ -1,0 +1,28 @@
+version: '3.1'
+
+services:
+  server:
+    build:
+      context: server/
+    environment:
+      - OPEN_TELEMETRY_COLLECTOR_URL=http://host.docker.internal:4318
+    ports:
+      - "8080:8080"
+
+  prometheus:
+    image: prom/prometheus:v2.39.1
+    command: [ "--config.file", "/local/config.yml" ]
+    volumes:
+      - "${PWD}/resources/prometheus.yml:/local/config.yml:ro"
+    ports:
+      - "9091:9090"
+
+  open-telemetry:
+    image: otel/opentelemetry-collector:0.62.0
+    command: [ "--config=/etc/otel/local-config.yml" ]
+    ports:
+      - "4318:4318"
+      - "8889:8889"
+      - "9090:8888"
+    volumes:
+      - "${PWD}/resources/otel-local-config.yml:/etc/otel/local-config.yml:ro"
